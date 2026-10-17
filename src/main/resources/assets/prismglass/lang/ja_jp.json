@@ -1,10 +1,10 @@
 {
   "prismglass.title": "PRISM GLASS",
-  "prismglass.subtitle": "ガラスUIの設定",
-  "prismglass.enabled": "ガラスUI: %s",
-  "prismglass.theme": "テーマカラー: %s",
+  "prismglass.subtitle": "神聖なクリスタルUI",
+  "prismglass.enabled": "神聖ガラスUI: %s",
+  "prismglass.theme": "クリスタルテーマ: %s",
   "prismglass.opacity": "透明度: %s%%",
-  "prismglass.future": "音楽プレイヤー: 今後の追加予定",
+  "prismglass.future": "音楽プレイヤー: 今後追加予定",
   "prismglass.reset": "初期設定に戻す",
   "prismglass.inventory": "インベントリ",
   "prismglass.craft": "クラフト"

@@ -10,19 +10,30 @@ import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 import java.util.Properties;
 
-/** No Minecraft dependencies: easy to test and safe to edit independently. */
+/** Versioned appearance preferences without any dependency on Minecraft classes. */
 public final class CrystalPreferences {
     public enum Theme {
-        FROST(0x88E8FF), AMETHYST(0xC6ADFF), PEARL(0xFFF4DF);
+        SERAPH(0xEAF7FF), HALO(0xFFF4D6), PRISM(0xDFFBFF);
         public final int color;
         Theme(int color) { this.color = color; }
         public Theme next() { return values()[(ordinal() + 1) % values().length]; }
+
+        /** Previous theme IDs remain loadable so existing player settings survive. */
+        public static Theme fromSaved(String raw) {
+            if (raw == null) return SERAPH;
+            return switch (raw.toUpperCase(Locale.ROOT)) {
+                case "FROST", "SERAPH" -> SERAPH;
+                case "PEARL", "HALO" -> HALO;
+                case "AMETHYST", "PRISM" -> PRISM;
+                default -> SERAPH;
+            };
+        }
     }
 
     private final Path file;
     private boolean enabled = true;
     private int opacity = 60;
-    private Theme theme = Theme.FROST;
+    private Theme theme = Theme.SERAPH;
 
     private CrystalPreferences(Path file) { this.file = file; }
 
@@ -34,11 +45,7 @@ public final class CrystalPreferences {
                 properties.load(in);
                 prefs.enabled = Boolean.parseBoolean(properties.getProperty("enabled", "true"));
                 prefs.opacity = clamp(parseInt(properties.getProperty("opacity", "60"), 60));
-                try {
-                    prefs.theme = Theme.valueOf(properties.getProperty("theme", "FROST").toUpperCase(Locale.ROOT));
-                } catch (IllegalArgumentException ignored) {
-                    prefs.theme = Theme.FROST;
-                }
+                prefs.theme = Theme.fromSaved(properties.getProperty("theme", "SERAPH"));
             } catch (IOException e) {
                 System.err.println("[PrismGlass] Cannot load settings: " + e.getMessage());
             }
@@ -53,7 +60,7 @@ public final class CrystalPreferences {
     public void toggle() { enabled = !enabled; save(); }
     public void changeOpacity(int delta) { opacity = clamp(opacity + delta); save(); }
     public void cycleTheme() { theme = theme.next(); save(); }
-    public void reset() { enabled = true; opacity = 60; theme = Theme.FROST; save(); }
+    public void reset() { enabled = true; opacity = 60; theme = Theme.SERAPH; save(); }
 
     static int clamp(int value) { return Math.max(20, Math.min(90, value)); }
     static int parseInt(String raw, int fallback) {
