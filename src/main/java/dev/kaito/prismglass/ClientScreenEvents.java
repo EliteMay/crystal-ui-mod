@@ -50,7 +50,7 @@ public final class ClientScreenEvents {
         int y = isBag ? Math.max(8, (screen.height - 166) / 2 - 8) : 8;
 
         event.addListener(new CrystalButton(x, y, 46, 18,
-            Component.literal("PRISM"), state,
+            Component.literal(PrismJapaneseText.openSettings()), state,
             button -> Minecraft.getInstance().setScreen(new CrystalSettingsScreen(screen, state))));
     }
 }
