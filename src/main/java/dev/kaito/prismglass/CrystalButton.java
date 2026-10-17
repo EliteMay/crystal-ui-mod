@@ -37,18 +37,9 @@ public final class CrystalButton extends AbstractButton {
             g.fill(x + 8, y + h - 3, x + w - 8, y + h - 2, 0x72FFF2DC);
         }
 
-        // Text-only local backing keeps the rest of the expensive GPU glass visible.
-        int textW = Minecraft.getInstance().font.width(getMessage());
-        int plateW = Math.min(w - 10, textW + 16);
-        int plateX = x + (w - plateW) / 2;
-        int plateY = y + (h - 14) / 2;
-        if (plateW > 8 && h >= 17) {
-            g.fillGradient(plateX, plateY, plateX + plateW, plateY + 14,
-                0xBCEEF6F9, 0xB4E2EEF4);
-        }
-
-        int fg = active ? 0xFF102838 : 0xFF5B6E7B;
-        g.drawCenteredString(Minecraft.getInstance().font, getMessage(),
-            x + w / 2, y + (h - 8) / 2, fg);
+        // Text gets a pixel-sharp pearl outline instead of a solid white sticker.
+        // Preserve the GPU glass and bevel across the entire interactive button.
+        GlassTypography.centered(g, Minecraft.getInstance().font, getMessage(),
+            x + w / 2, y + (h - 8) / 2, active);
     }
 }
