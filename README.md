@@ -12,7 +12,7 @@ Minecraft **1.21.1 / Forge 52.1.0 / Java 21** 向けに、半透明ガラス・�
 **まだない機能**：インベントリ本体の全面リデザイン、ゲーム本体の設定メニュー全面置換、ぼかしシェーダー、音楽・YouTube Music連携。
 
 ## 検証状況
-設定保存ロジックのJava 21テストは成功。**Forge依存のビルド・実ゲーム起動は未検証です。動作保証されたJARではありません。**
+設定保存ロジックのJava 21テストは成功。**Forge 52.1.0でのGradleビルドとJava 21設定保存テストは成功しました。Minecraft実ゲーム起動と他MOD互換性は未検証です。**
 
 ## Windowsで試作ビルド
 1. [Forge公式1.21.1ダウンロード](https://files.minecraftforge.net/net/minecraftforge/forge/index_1.21.1.html) から **52.1.0 の MDK** をダウンロード（Installerではありません）。

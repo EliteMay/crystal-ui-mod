@@ -2,6 +2,7 @@ package dev.kaito.prismglass;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.network.chat.Component;
 
@@ -20,6 +21,10 @@ public final class CrystalButton extends AbstractButton {
     }
 
     @Override public void onPress() { press.onPress(this); }
+
+    @Override protected void updateWidgetNarration(NarrationElementOutput output) {
+        defaultButtonNarrationText(output);
+    }
 
     @Override protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         int tint = preferences.theme().color;
