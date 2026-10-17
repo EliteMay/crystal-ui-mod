@@ -1,8 +1,8 @@
 {
   "prismglass.title": "PRISM GLASS",
-  "prismglass.subtitle": "Crystal interface settings",
-  "prismglass.enabled": "Glass interface: %s",
-  "prismglass.theme": "Crystal tone: %s",
+  "prismglass.subtitle": "Seraph crystal interface",
+  "prismglass.enabled": "Sacred glass: %s",
+  "prismglass.theme": "Crystal theme: %s",
   "prismglass.opacity": "Glass opacity: %s%%",
   "prismglass.future": "Music player: planned for a future update",
   "prismglass.reset": "Reset defaults",
