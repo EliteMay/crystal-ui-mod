@@ -1,33 +1,35 @@
-# Crystal UI MOD: Prism Glass v0.1.0 (試作)
+# Crystal UI MOD / Prism Glass
 
-Minecraft **1.21.1 / Forge 52.1.0 / Java 21** 向けに、半透明ガラス・クリスタル風のUIを試作しています。
+Minecraft 1.21.1 / Forge 52.1.0 / Java 21向けのクライアント専用GUI MOD（試作中）。
 
-## 現在ある機能
-- 標準インベントリとオプション画面にガラスフレームを追加
-- 画面右上の `PRISM` から独自の設定画面を開く
-- テーマ3種類、透明度（20～90%）、装飾ON/OFF、初期設定へ戻す
-- 設定を `config/prismglass.properties` へ保存
-- スロットの座標・クリック処理・クラフトやネットワーク同期は変更しない
+## v0.2：Frosted Glass
+従来の青い外枠と巨大なUIラベルを廃止し、標準インベントリの灰色背景を、影・反射・半透明グラデーションを持つガラスパネルに変更しました。
 
-**まだない機能**：インベントリ本体の全面リデザイン、ゲーム本体の設定メニュー全面置換、ぼかしシェーダー、音楽・YouTube Music連携。
+- インベントリ背景とスロットの見た目を変更
+- プレイヤーモデル・装備欄・クラフト欄・レシピブックのMinecraft標準処理を継承
+- PRISMボタンから透明度・3テーマ・ガラスUI ON/OFFを切替、設定保存・リセット
+- クライアント専用。スロット座標とアイテム同期は変更しない
+- 他MODが独自に作ったインベントリ画面の置換は避ける
+
+デザインの意図、描画方法、未実装事項は [DESIGN.md](DESIGN.md)。
 
 ## 検証状況
-設定保存ロジックのJava 21テストは成功。**Forge 52.1.0でのGradleビルドとJava 21設定保存テストは成功しました。Minecraft実ゲーム起動と他MOD互換性は未検証です。**
+- v0.1のForge Gradleビルド、Minecraft 1.21.1での画面表示を確認。
+- v0.2はビルドと自動テストを実行して確認。
+- **v0.2のATLauncher実ゲーム表示、アイテム操作、他MOD互換性はまだ未確認。**
+- 本物のガウシアンブラー・屈折シェーダーはまだありません。現在は軽量な疑似フロストガラスです。
 
-## Windowsで試作ビルド
-1. [Forge公式1.21.1ダウンロード](https://files.minecraftforge.net/net/minecraftforge/forge/index_1.21.1.html) から **52.1.0 の MDK** をダウンロード（Installerではありません）。
-2. Java 21 JDKがあるWindows環境で、このリポジトリのフォルダをPowerShellで開く。
-3. 次を実行。
+## ローカルでのビルド
+1. Forge 1.21.1の公式MDK (52.1.0) とJava 21 JDKを使います。
+2. `gradlew.bat build` を実行。
+3. `build/libs/prismglass-0.2.0.jar` を**テスト用**ATLauncherインスタンスへ導入します。
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\build-from-mdk.ps1 -MdkZip "$HOME\Downloads\forge-1.21.1-52.1.0-mdk.zip"
-```
+以前のv0.1 JARは保管して、同じ `mods` に2バージョンを同時に置かないでください。問題があればv0.2を外して旧JARに戻せます。
 
-スクリプトは公式MDKのSHA1を照合し、既存のATLauncherインスタンスを変更せず新しい `forge-workspace` にビルドします。ビルド成功後、`forge-workspace/build/libs/prismglass-0.1.0.jar` が生成される予定です。
+## 今後の候補
+- 背景をぼかす専用シェーダー・屈折（互換性とパフォーマンスの検証が必要）
+- スムーズな開閉アニメーション
+- 他のインベントリ系GUIへの慎重な拡張
+- 音楽プレイヤー（実装方法・利用規約を調査後に追加）
 
-まずはテスト用インスタンスで起動し、アイテム移動・Shiftクリック・クラフトなどを確認してください。
-
-## 権利について
-ソースコードのライセンスは未決定です。第三者への改変・再配布権はまだ付与していません。
-
-詳細: [要件定義](REQUIREMENTS.md)
+[要件定義](REQUIREMENTS.md) / [作業報告書](作業報告書.md)

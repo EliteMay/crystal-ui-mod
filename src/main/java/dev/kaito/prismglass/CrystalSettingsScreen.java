@@ -59,9 +59,8 @@ public final class CrystalSettingsScreen extends Screen {
     }
 
     @Override public void render(GuiGraphics g, int mouseX, int mouseY, float tick) {
-        g.fillGradient(0, 0, width, height, 0xC0152438, 0xD0081023);
+        g.fillGradient(0, 0, width, height, 0x800C1824, 0xA008101B);
         GlassPaint.panel(g, px, py, pw, ph, preferences.opacity(), preferences.theme().color);
-        GlassPaint.frame(g, px + 8, py + 8, pw - 16, ph - 16, preferences.theme().color);
         g.drawCenteredString(font, title, width / 2, py + (ph < 174 ? 10 : 18), 0xFFF6FCFF);
         if (ph >= 174) {
             g.drawCenteredString(font, Component.translatable("prismglass.subtitle"), width / 2, py + 34, 0xFFBED1E0);
