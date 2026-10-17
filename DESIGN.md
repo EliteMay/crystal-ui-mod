@@ -1,29 +1,20 @@
-# Prism Glass v0.5 True Glass
+# Prism Glass - 現在のデザイン基準
 
-## Why the approach changed
-v0.1-v0.4 faked glass with `fill`/`fillGradient` rectangles. Alpha and rim tweaks can never
-produce refraction or a blurred backdrop, so every attempt looked like a white plate or a
-dark panel. v0.5 renders glass on the GPU.
+## v0.5：継承するGPUガラス
+`GlassBackdrop`で描画済み背景をシャープ画像＋ぼかし画像に分け、`GlassShaders`と`GlassRenderer`を使う。角に反射、面に透過、下側に淡い金色。Shader失敗時には標準描画へFallback。既存のスロット座標やアイテム操作を変更しない。
 
-## Pipeline (client only)
-1. `GlassBackdrop` copies the already drawn frame once per screen render into a sharp texture
-   and a dual-Kawase blurred texture (1/2, 1/4, 1/8 resolution passes).
-2. `glass.fsh` draws a rounded-box SDF quad: edge refraction with slight chromatic dispersion,
-   Fresnel rim light (cool top-left, warm bottom-right), sheen bands, top halo, edge-hugging
-   twinkles, grain, floating shadow. Slots are etched overlays; buttons use a smaller bevel.
-3. `FrostedInventoryScreen` drops vanilla's full-screen blur (overrides `renderBlurredBackground`
-   and `renderTransparentBackground`; `renderBackground` is NOT overridden because it calls `renderBg`).
-4. Any shader or GL failure calls `GlassShaders.fail()` and the v0.4 flat painter takes over.
+## v0.6画像で確認した課題
+- 設定画面のタイトル、説明、透明度を白い大きな長方形が覆う
+- ボタン上の文字の背景に小さな白い四角が貼られており、ガラスの質感と統一されていない
+- 日本語化は成功しているので、翻訳や保存仕様は維持する
 
-## Unchanged
-Slot positions, clicks, shift-click, crafting and the recipe book are vanilla (the screen
-only replaces cosmetic background). Preferences format is unchanged.
+## v0.7の修正
+- 設定見出しの不透明な長方形を撤去し、細いゴールドの仕切りへ変更
+- `GlassTypography`を追加し、暗い文字色に1 GUIピクセルの淡い縁取りを描画。空や草など高低明度の背景でも文字が埋もれにくくする
+- ボタン内の白色長方形を廃止。既存ガラスButton Shaderの背景をそのまま活用
+- 透明度／テーマ／ガラスUIの操作、設定保存、日本語固定表示を変更しない
 
-## Licensing
-Algorithms are public techniques (dual Kawase blur, SDF, Schlick-style falloff). No code from
-other mods was copied; ReBlured (MIT), Blur and Blur+ were only reviewed as prior art.
-
-## Known limits
-- Shader packs (Iris/Oculus) are untested.
-- HUD hearts/hotbar are part of the captured backdrop, so they show through glass.
-- Verified in a Forge dev client only; modtest (ATLauncher) check is pending the user.
+## 対象外と残る検証
+- 新シェーダーやぼかし強度変更をしない。v0.5で好評だった質感を保つ
+- 実機で文字の縁取りが太すぎないか、低いGUIスケールでも読みやすいかを確認する
+- 森／空／夜の背景と、アイテム移動・クラフト・レシピブックの操作は未確認

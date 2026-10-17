@@ -68,22 +68,24 @@ public final class CrystalSettingsScreen extends Screen {
         g.fillGradient(0, 0, width, height, 0x4A0E1B2B, 0x700A1625);
         GlassPaint.panel(g, px, py, pw, ph, preferences.opacity(), preferences.theme().color);
 
-        // Local clarity layer. Keep the remainder of the panel truly glass-like.
-        int upper = ph < 174 ? 21 : 54;
-        g.fillGradient(px + 13, py + 9, px + pw - 13, py + upper,
-            0xC4EFF7FB, 0xACE0EDF4);
-        g.fill(px + 19, py + upper, px + pw - 19, py + upper + 1, 0x35FFF2D4);
+        // Only a fine gilded separator is needed. The GPU glass stays visible
+        // behind all title text instead of becoming a large white rectangle.
+        if (ph >= 174) {
+            g.fillGradient(px + 30, py + 56, px + pw - 30, py + 57,
+                0x43FFE7B6, 0x34E5F6FF);
+        }
     }
 
     @Override public void render(GuiGraphics g, int mouseX, int mouseY, float tick) {
         super.render(g, mouseX, mouseY, tick);
-        int ink = 0xFF132A3A;
-        g.drawCenteredString(font, title, width / 2, py + (ph < 174 ? 15 : 17), ink);
+        GlassTypography.centered(g, font, title, width / 2,
+            py + (ph < 174 ? 15 : 17), true);
         if (ph >= 174) {
-            g.drawCenteredString(font, Component.literal(PrismJapaneseText.subtitle()),
-                width / 2, py + 30, ink);
-            g.drawCenteredString(font, Component.literal(PrismJapaneseText.opacity(preferences.opacity())),
-                width / 2, py + 44, ink);
+            GlassTypography.centered(g, font, Component.literal(PrismJapaneseText.subtitle()),
+                width / 2, py + 30, true);
+            GlassTypography.centered(g, font,
+                Component.literal(PrismJapaneseText.opacity(preferences.opacity())),
+                width / 2, py + 44, true);
         }
     }
 
