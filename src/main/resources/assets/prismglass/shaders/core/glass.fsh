@@ -107,6 +107,24 @@ void main() {
     col = mix(col, rim, clamp(rimAmt, 0.0, 1.0));
     // Wider Fresnel falloff under the rim.
     col += rim * pow(edge, 3.0) * (0.10 + 0.22 * primary + 0.12 * secondary);
+
+    // ---- delicate pearl iridescence, only along the beveled glass edge ----
+    // Time shifts the hue very slowly, not the geometry. The central world
+    // view and item slots stay clear; no full-panel rainbow or flashing overlay.
+    float edgeZone = 1.0 - smoothstep(0.7, button ? 2.4 : 6.0, -d);
+    float topEdge = 1.0 - smoothstep(-0.78, -0.18, n.y);
+    float sideEdge = abs(n.x);
+    float cornerGlow = smoothstep(0.68, 0.97, abs(local.x) / max(HalfSize.x, 1.0));
+    float spectralPhase = 1.7 * local.x / max(HalfSize.x, 1.0)
+                        + 0.35 * local.y / max(HalfSize.y, 1.0)
+                        + Time * 0.11;
+    vec3 spectrum = 0.53 + 0.47 * cos(spectralPhase + vec3(0.0, -2.0944, 2.0944));
+    vec3 pearlSpectrum = mix(vec3(0.97, 0.99, 1.0), spectrum, 0.63);
+    float spectrumMask = edgeZone * (0.54 * topEdge + 0.12 * sideEdge
+                                   + 0.22 * cornerGlow);
+    float spectrumWeight = min(0.46, spectrumMask) * (button ? 0.32 : 1.0);
+    col = mix(col, pearlSpectrum, spectrumWeight);
+
     // Thin dark contour just inside the rim gives the plate thickness.
     float contour = smoothstep(1.3, 2.2, -d) * (1.0 - smoothstep(2.2, 3.8, -d));
     col *= 1.0 - contour * (button ? 0.05 : 0.08);
@@ -117,7 +135,7 @@ void main() {
         t += sin(Time * 0.25) * 0.025;
         float sheen = exp(-pow((t + 0.42) * 5.0, 2.0)) * 0.085
                     + exp(-pow((t - 0.08) * 13.0, 2.0)) * 0.045;
-        col += cool * sheen * smoothstep(1.0, 8.0, -d);
+        col += mix(cool, pearlSpectrum, 0.38) * sheen * smoothstep(1.0, 8.0, -d);
 
         // Soft halo of light gathering at the top edge.
         vec2 hp = (local - vec2(0.0, -HalfSize.y)) / vec2(HalfSize.x * 0.85, HalfSize.y * 0.55);
@@ -132,7 +150,7 @@ void main() {
             float star = exp(-length(p) * 13.0) + 0.5 * exp(-abs(p.x) * 30.0 - abs(p.y) * 5.0)
                                                 + 0.5 * exp(-abs(p.y) * 30.0 - abs(p.x) * 5.0);
             float zone = 1.0 - smoothstep(3.0, 14.0, -d);
-            col += warm * star * tw * zone * 0.5 * step(0.0, -d);
+            col += mix(warm, pearlSpectrum, 0.42) * star * tw * zone * 0.38 * step(0.0, -d);
         }
     } else {
         col += tint * Params.y * 0.14;
