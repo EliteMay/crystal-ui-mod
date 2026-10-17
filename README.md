@@ -1,24 +1,33 @@
-# Crystal UI MOD / Prism Glass (試作)
+# Crystal UI MOD: Prism Glass v0.1.0 (試作)
 
-Minecraft **1.21.1 / Forge 52.x** に向けた、半透明ガラス・クリスタル風UI MODです。
+Minecraft **1.21.1 / Forge 52.1.0 / Java 21** 向けに、半透明ガラス・クリスタル風のUIを試作しています。
 
-## 目標
-- インベントリと設定画面を美しく、使いやすいデザインにする
-- 既存のアイテム操作・クラフト・他MODを壊さない
-- 装飾のON/OFFや設定リセットを用意する
-- 将来は音楽プレイヤーの統合を検討する
+## 現在ある機能
+- 標準インベントリとオプション画面にガラスフレームを追加
+- 画面右上の `PRISM` から独自の設定画面を開く
+- テーマ3種類、透明度（20～90%）、装飾ON/OFF、初期設定へ戻す
+- 設定を `config/prismglass.properties` へ保存
+- スロットの座標・クリック処理・クラフトやネットワーク同期は変更しない
 
-## 現在の状況
-- **v0.1のソース試作を作成済み**（GitHubへのソース追加・Forgeフルビルドはまだ未完了）
-- 設定保存部分はJava 21の簡易テストに合格
-- Forge 1.21.1上での起動検証は未実施
-- 現時点で動作保証付きのMOD JARは配布していません
+**まだない機能**：インベントリ本体の全面リデザイン、ゲーム本体の設定メニュー全面置換、ぼかしシェーダー、音楽・YouTube Music連携。
 
-詳細は [REQUIREMENTS.md](REQUIREMENTS.md) を参照してください。
+## 検証状況
+設定保存ロジックのJava 21テストは成功。**Forge依存のビルド・実ゲーム起動は未検証です。動作保証されたJARではありません。**
 
-## 技術
-- Java 21
-- Minecraft Forge 1.21.1（初期対象 52.1.0）
-- ローカルのATLauncherインスタンスで最終動作確認予定
+## Windowsで試作ビルド
+1. [Forge公式1.21.1ダウンロード](https://files.minecraftforge.net/net/minecraftforge/forge/index_1.21.1.html) から **52.1.0 の MDK** をダウンロード（Installerではありません）。
+2. Java 21 JDKがあるWindows環境で、このリポジトリのフォルダをPowerShellで開く。
+3. 次を実行。
 
-このリポジトリは試作段階です。実際のMinecraftへ導入する前に環境をバックアップしてください。
+```powershell
+powershell -ExecutionPolicy Bypass -File .\build-from-mdk.ps1 -MdkZip "$HOME\Downloads\forge-1.21.1-52.1.0-mdk.zip"
+```
+
+スクリプトは公式MDKのSHA1を照合し、既存のATLauncherインスタンスを変更せず新しい `forge-workspace` にビルドします。ビルド成功後、`forge-workspace/build/libs/prismglass-0.1.0.jar` が生成される予定です。
+
+まずはテスト用インスタンスで起動し、アイテム移動・Shiftクリック・クラフトなどを確認してください。
+
+## 権利について
+ソースコードのライセンスは未決定です。第三者への改変・再配布権はまだ付与していません。
+
+詳細: [要件定義](REQUIREMENTS.md)

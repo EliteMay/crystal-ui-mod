@@ -1,0 +1,9 @@
+{
+  "prismglass.title": "PRISM GLASS",
+  "prismglass.subtitle": "Crystal interface settings",
+  "prismglass.enabled": "Crystal accents: %s",
+  "prismglass.theme": "Crystal tone: %s",
+  "prismglass.opacity": "Glass opacity: %s%%",
+  "prismglass.future": "Music player: planned for a future update",
+  "prismglass.reset": "Reset defaults"
+}
