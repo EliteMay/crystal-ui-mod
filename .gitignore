@@ -4,3 +4,9 @@ run/
 forge-workspace/
 .idea/
 *.iml
+run/
+smoke-log.txt
+shot*.png
+build-log-v05.txt
+build-status-v05.txt
+unit-classes/

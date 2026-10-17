@@ -29,11 +29,12 @@ public final class CrystalButton extends AbstractButton {
         int x = getX(), y = getY(), w = width, h = height;
         int alpha = isHoveredOrFocused() ? Math.min(90, preferences.opacity() + 10) : preferences.opacity();
         int tint = preferences.theme().color;
-        GlassPaint.panel(g, x, y, w, h, alpha, tint);
-        if (w >= 68 && h >= 22) {
+        boolean gpu = GlassRenderer.button(g, x, y, w, h, isHoveredOrFocused(), preferences.opacity(), tint);
+        if (!gpu) GlassPaint.panel(g, x, y, w, h, alpha, tint);
+        if (!gpu && w >= 68 && h >= 22) {
             GlassPaint.jewel(g, x + 10, y + h / 2, tint);
         }
-        if (isHoveredOrFocused()) {
+        if (!gpu && isHoveredOrFocused()) {
             g.fill(x + 8, y + h - 3, x + w - 8, y + h - 2, 0x72FFF2DC);
         }
         int fg = active ? 0xFF20384C : 0xFF677681;

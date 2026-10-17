@@ -57,9 +57,14 @@ public final class CrystalSettingsScreen extends Screen {
         return Component.translatable("prismglass.theme", preferences.theme().name());
     }
 
-    @Override public void render(GuiGraphics g, int mouseX, int mouseY, float tick) {
-        g.fillGradient(0, 0, width, height, 0x7C213348, 0xA00A1625);
+    /** Vanilla draws the background inside super.render, so the glass panel must be drawn here. */
+    @Override public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float tick) {
+        g.fillGradient(0, 0, width, height, 0x4A0E1B2B, 0x700A1625);
         GlassPaint.panel(g, px, py, pw, ph, preferences.opacity(), preferences.theme().color);
+    }
+
+    @Override public void render(GuiGraphics g, int mouseX, int mouseY, float tick) {
+        super.render(g, mouseX, mouseY, tick);
         g.drawCenteredString(font, title, width / 2, py + (ph < 174 ? 10 : 18), 0xFF233B50);
         if (ph >= 174) {
             g.drawCenteredString(font, Component.translatable("prismglass.subtitle"), width / 2, py + 30, 0xFF334C5A);
@@ -70,7 +75,6 @@ public final class CrystalSettingsScreen extends Screen {
             g.drawCenteredString(font, Component.translatable("prismglass.future"),
                                  width / 2, py + ph - 55, 0xFF627684);
         }
-        super.render(g, mouseX, mouseY, tick);
     }
 
     @Override public void onClose() { Minecraft.getInstance().setScreen(parent); }

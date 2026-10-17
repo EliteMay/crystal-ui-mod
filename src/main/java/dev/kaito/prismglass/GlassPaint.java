@@ -38,6 +38,7 @@ public final class GlassPaint {
     public static void surface(GuiGraphics g, int x, int y, int w, int h,
                                int opacity, int tint) {
         if (w < 14 || h < 14) return;
+        if (GlassRenderer.pane(g, x, y, w, h, opacity, tint)) return;
         int a = glassAlpha(opacity);
         // Floating shadow is outside the panel, not a dark gradient over the world.
         roundedGradient(g, x - 2, y + 3, w + 4, h + 3, 5,
@@ -58,6 +59,12 @@ public final class GlassPaint {
             g.fillGradient(x + 7, y + 5, x + Math.min(44, w - 8), y + 15,
                 0x20FFFFFF, 0x00FFFFFF);
         }
+    }
+
+    /** Batched slot wells (top-left corners in xy pairs): GPU etching, or legacy rims. */
+    public static void slots(GuiGraphics g, int[] xy, int count, int tint) {
+        if (GlassRenderer.slots(g, xy, count, tint)) return;
+        for (int i = 0; i < count; i++) slot(g, xy[i * 2], xy[i * 2 + 1], tint);
     }
 
     /** Etched transparent inventory slot. One-pixel rims, not white opaque boxes. */
@@ -88,6 +95,7 @@ public final class GlassPaint {
 
     /** Settings need additional neutral contrast; inventory must remain clear. */
     public static void panel(GuiGraphics g, int x, int y, int w, int h, int opacity, int tint) {
+        if (GlassRenderer.pane(g, x, y, w, h, opacity, tint)) return;
         surface(g, x, y, w, h, opacity, tint);
         if (w > 34 && h > 14) {
             roundedGradient(g, x + 3, y + 3, w - 6, h - 6, 3,

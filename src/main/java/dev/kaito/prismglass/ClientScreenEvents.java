@@ -30,6 +30,12 @@ public final class ClientScreenEvents {
         }
     }
 
+    /** One backdrop snapshot per rendered screen frame. */
+    @SubscribeEvent
+    public void onRenderPre(ScreenEvent.Render.Pre event) {
+        GlassBackdrop.beginFrame();
+    }
+
     @SubscribeEvent
     public void onInit(ScreenEvent.Init.Post event) {
         Screen screen = event.getScreen();

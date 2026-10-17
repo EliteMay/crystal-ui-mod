@@ -2,6 +2,7 @@ package dev.kaito.prismglass;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.api.distmarker.Dist;
 
@@ -13,6 +14,7 @@ public final class PrismGlass {
     public PrismGlass() {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             MinecraftForge.EVENT_BUS.register(new ClientScreenEvents());
+            FMLJavaModLoadingContext.get().getModEventBus().addListener(GlassShaders::onRegister);
         }
     }
 }

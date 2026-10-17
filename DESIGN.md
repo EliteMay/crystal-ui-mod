@@ -1,26 +1,29 @@
-# Prism Glass v0.4 Clear Crystal デザイン仕様
+# Prism Glass v0.5 True Glass
 
-## 今回の問題
-ユーザーのv0.3実ゲーム画像では、淡い白いガラスが重なって全体が白い板のように見えた。スロットに太い白縁が続き、INVENTORYラベルが装備・プレビューと重なっていた。
+## Why the approach changed
+v0.1-v0.4 faked glass with `fill`/`fillGradient` rectangles. Alpha and rim tweaks can never
+produce refraction or a blurred backdrop, so every attempt looked like a white plate or a
+dark panel. v0.5 renders glass on the GPU.
 
-## デザインの改善
-- 実際の背景が見える**透明な1枚板**。白塗りで質感を作らない。
-- デフォルトのガラス本体のアルファを低く設定。設定値20〜90に対して本体のアルファは22〜57/255（約9〜22%）。
-- 反射・透明感は周辺の1ピクセルの明るい縁と内側の細い暗い縁、下面の薄い影で示す。
-- 内側のプレイヤー・クラフトパネルは追加の塗りつぶしをやめ、細い枠だけにする。
-- スロット内部の塗りは弱い暗色、角にはごく薄い光。太い白塗りを避ける。
-- 重なっていたINVENTORY/CRAFTの見出しは背景UIから撤去。ボタンも46×18へ縮小。
-- PRISM設定画面を小さくし、透明度の説明と操作ボタンの縦の衝突を解消。操作用のボタンは背景より少し不透明にして読みやすくする。
+## Pipeline (client only)
+1. `GlassBackdrop` copies the already drawn frame once per screen render into a sharp texture
+   and a dual-Kawase blurred texture (1/2, 1/4, 1/8 resolution passes).
+2. `glass.fsh` draws a rounded-box SDF quad: edge refraction with slight chromatic dispersion,
+   Fresnel rim light (cool top-left, warm bottom-right), sheen bands, top halo, edge-hugging
+   twinkles, grain, floating shadow. Slots are etched overlays; buttons use a smaller bevel.
+3. `FrostedInventoryScreen` drops vanilla's full-screen blur (overrides `renderBlurredBackground`
+   and `renderTransparentBackground`; `renderBackground` is NOT overridden because it calls `renderBg`).
+4. Any shader or GL failure calls `GlassShaders.fail()` and the v0.4 flat painter takes over.
 
-## 技術
-Minecraft 1.21.1 / Forge 52.1.0、Java 21。標準InventoryScreenを継承して背景だけを差し替え、アイテムの移動やレシピブックには触らない。表示OFFは従来の描画へ復帰できる。
+## Unchanged
+Slot positions, clicks, shift-click, crafting and the recipe book are vanilla (the screen
+only replaces cosmetic background). Preferences format is unchanged.
 
-## 正直な限界
-これは軽量な半透明材質表現であり、**ガラス越しだけをぼかす専用シェーダー、背景屈折、画素単位のガウシアンブラーは未実装**。Minecraftの既存画面ぼかしは全面に適用されることが多く、1.21.1 Forgeでは透過要素の描画上の既知問題も報告されているため、未検証のシェーダー導入で既存操作の安定性を落とさない。
+## Licensing
+Algorithms are public techniques (dual Kawase blur, SDF, Schlick-style falloff). No code from
+other mods was copied; ReBlured (MIT), Blur and Blur+ were only reviewed as prior art.
 
-## 実機検証
-- 昼と夜、森など模様が複雑な背景でゲーム世界が透けること
-- 白い空と暗い地面でスロット・アイテムの輪郭が見えること
-- ボタン/文字の重なりがないこと
-- Shiftクリック、装備移動、クラフト、レシピブック、表示OFF
-- 別GUIスケール・再起動後の設定保存
+## Known limits
+- Shader packs (Iris/Oculus) are untested.
+- HUD hearts/hotbar are part of the captured backdrop, so they show through glass.
+- Verified in a Forge dev client only; modtest (ATLauncher) check is pending the user.
