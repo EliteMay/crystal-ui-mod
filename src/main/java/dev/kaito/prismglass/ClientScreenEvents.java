@@ -40,10 +40,10 @@ public final class ClientScreenEvents {
         if (screen.width < 230 || screen.height < 150) return;
 
         CrystalPreferences state = prefs();
-        int x = isBag ? Math.min(screen.width - 78, screen.width / 2 + 98) : screen.width - 78;
+        int x = isBag ? Math.min(screen.width - 54, screen.width / 2 + 96) : screen.width - 54;
         int y = isBag ? Math.max(8, (screen.height - 166) / 2 - 8) : 8;
 
-        event.addListener(new CrystalButton(x, y, 68, 20,
+        event.addListener(new CrystalButton(x, y, 46, 18,
             Component.literal("PRISM"), state,
             button -> Minecraft.getInstance().setScreen(new CrystalSettingsScreen(screen, state))));
     }

@@ -1,28 +1,27 @@
-# Crystal UI MOD / Prism Glass
+# Prism Glass (Minecraft Forge 1.21.1)
 
-Minecraft **1.21.1 / Forge 52.1.0 / Java 21** 向けクライアント専用のカスタムUI MOD（開発中）。
+Java 21 / Forge 52.1.0のクライアント専用インベントリUI MOD。制作中。
 
-## v0.3：Seraph Crystal（試作）
-- 暗いSF系から白金・薄水色・淡い金の「神聖なクリスタル」UIへ改修
-- 半透明パネル、光輪、反射、細い金属の縁、虹色のハイライト
-- 明るいインベントリスロットと濃い文字色
-- 宝石風のPRISMボタン
-- 3テーマ：SERAPH / HALO / PRISM、透明度、ON/OFF、設定保存
-- v0.1 / v0.2の設定値を互換読み込み
-- バニラのインベントリとレシピブック・クラフト・アイテム操作の仕組みを継承
+## v0.4 Clear Crystal
+前版の神聖クリスタルUIが白く不透明に見えた問題を修正。背景が透ける**透明な1枚のガラス**へ再設計。
 
-デザインの詳細: [DESIGN.md](DESIGN.md)
+- 大パネルのデフォルト本体透過率は約84%。背景のブロックが見える
+- 1ピクセルの白い反射、細い影、控えめな淡金のハイライト
+- 2重の白いプレイヤー・クラフトパネルを廃止
+- スロットは背景が見える極薄のガラス枠
+- 装備欄に重なっていたINVENTORY表示などを撤去
+- PRISMボタン・独自設定画面をコンパクトにしてボタン衝突を改善
+- SERAPH / HALO / PRISMのテーマと透明度、ON/OFF、旧設定互換を維持
+- バニラのスロット座標やクリック処理、レシピブック・クラフト処理を変更しない
+
+**未実装**：リアルタイム局所ぼかし、屈折シェーダー、音楽プレイヤー。
 
 ## 検証
-- Java 21 + Forge 52.1.0：`gradlew.bat --no-daemon build` 成功
-- 設定の単体テスト：初期化・透明度・保存・リセット・旧テーマ移行・不正値のケースすべて成功
-- v0.3 `prismglass-0.3.0.jar` をATLauncher `modtest` へ配置し、SHA256を照合
-- **v0.3の実際の画面描画、Shiftクリック、クラフト、他MOD互換性は未検証**
-- リアルタイムの背景ぼかし／屈折は未実装（軽量な疑似ガラス）
+- Java 21 + Forge 52.1.0で `gradlew.bat build` を使用
+- 最新のビルド・実ゲーム確認結果は [作業報告書.md](作業報告書.md)
+- Minecraft内の最終Visualや各操作は、ユーザーのmodtest画面で確認後に完成と判定する
 
 ## 導入
-`build/libs/prismglass-0.3.0.jar` をテスト用Forge 1.21.1インスタンスの `mods` に入れます。同じ `mods` に旧版を同時に入れないでください。
+テスト用ATLauncher `modtest` の `mods` へ `prismglass-0.4.0.jar` を配置。同じMODの旧版JARとは併用しない。旧版は `disabledmods` に退避し、問題があれば戻す。普段使いのsabaibaruを変更しない。
 
-`modtest` では旧版 `prismglass-0.2.0.jar` を `disabledmods` に退避済み。元に戻す場合はv0.3を外してv0.2を `mods` に戻します。普段使いの `sabaibaru` は変更しません。
-
-[要件定義](REQUIREMENTS.md) / [作業報告書](作業報告書.md)
+[デザイン](DESIGN.md) / [要件定義](REQUIREMENTS.md) / [作業報告書](作業報告書.md)
