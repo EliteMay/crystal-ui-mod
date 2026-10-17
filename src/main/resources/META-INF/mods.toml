@@ -1,0 +1,25 @@
+modLoader="javafml"
+loaderVersion="[52,)"
+license="All Rights Reserved"
+clientSideOnly=true
+
+[[mods]]
+modId="prismglass"
+version="${mod_version}"
+displayName="Prism Glass"
+authors="Kaito & ChatGPT"
+description='''A lightweight, client-only crystal glass settings panel and safe inventory/menu accents.'''
+
+[[dependencies.prismglass]]
+modId="forge"
+mandatory=true
+versionRange="[52.1.0,)"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.prismglass]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.21.1,1.21.2)"
+ordering="NONE"
+side="CLIENT"

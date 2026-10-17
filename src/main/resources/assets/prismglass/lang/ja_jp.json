@@ -1,0 +1,9 @@
+{
+  "prismglass.title": "PRISM GLASS",
+  "prismglass.subtitle": "クリスタルUIの設定",
+  "prismglass.enabled": "ガラス装飾: %s",
+  "prismglass.theme": "テーマカラー: %s",
+  "prismglass.opacity": "透明度: %s%%",
+  "prismglass.future": "音楽プレイヤー: 今後の追加予定",
+  "prismglass.reset": "初期設定に戻す"
+}
