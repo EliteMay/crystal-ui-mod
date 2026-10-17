@@ -1,7 +1,6 @@
 package dev.kaito.prismglass;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -10,7 +9,7 @@ import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import java.nio.file.Path;
 
-/** Adds a settings entry and subtle outer frame without interfering with slot hitboxes. */
+/** Only exact vanilla inventory screens are replaced; other mods' GUI subclasses remain untouched. */
 public final class ClientScreenEvents {
     private CrystalPreferences preferences;
 
@@ -22,33 +21,30 @@ public final class ClientScreenEvents {
         return preferences;
     }
 
-    private static boolean supported(Screen screen) {
-        return screen.getClass() == InventoryScreen.class || screen.getClass() == OptionsScreen.class;
+    @SubscribeEvent
+    public void onOpen(ScreenEvent.Opening event) {
+        Screen screen = event.getNewScreen();
+        if (screen != null && screen.getClass() == InventoryScreen.class &&
+            prefs().isEnabled() && Minecraft.getInstance().player != null) {
+            event.setNewScreen(new FrostedInventoryScreen(Minecraft.getInstance().player, prefs()));
+        }
     }
 
-    @SubscribeEvent public void onInit(ScreenEvent.Init.Post event) {
+    @SubscribeEvent
+    public void onInit(ScreenEvent.Init.Post event) {
         Screen screen = event.getScreen();
-        if (!supported(screen) || screen.width < 220 || screen.height < 140) return;
+        boolean isBag = screen instanceof FrostedInventoryScreen ||
+                        screen.getClass() == InventoryScreen.class;
+        boolean isOptions = screen.getClass() == OptionsScreen.class;
+        if (!isBag && !isOptions) return;
+        if (screen.width < 230 || screen.height < 150) return;
+
         CrystalPreferences state = prefs();
-        int x = screen.width - 84;
-        event.addListener(new CrystalButton(x, 7, 77, 22, Component.literal("PRISM"), state,
-            button -> Minecraft.getInstance().setScreen(new CrystalSettingsScreen(screen, state))));
-    }
+        int x = isBag ? Math.min(screen.width - 78, screen.width / 2 + 98) : screen.width - 78;
+        int y = isBag ? Math.max(8, (screen.height - 166) / 2 - 8) : 8;
 
-    @SubscribeEvent public void onRender(ScreenEvent.Render.Post event) {
-        Screen screen = event.getScreen();
-        if (!supported(screen) || !prefs().isEnabled()) return;
-        int w = screen.width;
-        int h = screen.height;
-        if (w < 220 || h < 140) return;
-        GuiGraphics g = event.getGuiGraphics();
-        int tint = prefs().theme().color;
-        GlassPaint.frame(g, 5, 5, w - 10, h - 10, tint);
-        int tagW = Math.min(117, w / 3);
-        GlassPaint.panel(g, 9, 9, tagW, 25, prefs().opacity(), tint);
-        g.drawString(Minecraft.getInstance().font, "PRISM / " + (screen instanceof InventoryScreen ? "BAG" : "SETTINGS"),
-                     18, 17, 0xFFF0F8FF);
-        GlassPaint.panel(g, 9, h - 24, 82, 16, prefs().opacity(), tint);
-        g.drawString(Minecraft.getInstance().font, "1.21.1 FORGE", 16, h - 20, 0xFFD4E7F0);
+        event.addListener(new CrystalButton(x, y, 68, 20,
+            Component.literal("PRISM"), state,
+            button -> Minecraft.getInstance().setScreen(new CrystalSettingsScreen(screen, state))));
     }
 }
