@@ -29,12 +29,12 @@ public final class CrystalButton extends AbstractButton {
         int x = getX(), y = getY(), w = width, h = height;
         int alpha = isHoveredOrFocused() ? Math.min(90, preferences.opacity() + 10) : preferences.opacity();
         int tint = preferences.theme().color;
-        GlassPaint.surface(g, x, y, w, h, alpha, tint);
-        if (w >= 45 && h >= 19) {
+        GlassPaint.panel(g, x, y, w, h, alpha, tint);
+        if (w >= 68 && h >= 22) {
             GlassPaint.jewel(g, x + 10, y + h / 2, tint);
         }
         if (isHoveredOrFocused()) {
-            g.fill(x + 18, y + h - 3, x + w - 7, y + h - 2, 0x85FFE9BA);
+            g.fill(x + 8, y + h - 3, x + w - 8, y + h - 2, 0x72FFF2DC);
         }
         int fg = active ? 0xFF20384C : 0xFF677681;
         g.drawCenteredString(Minecraft.getInstance().font, getMessage(),
