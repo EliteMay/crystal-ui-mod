@@ -35,7 +35,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\iterate.ps1 -Tag manual
 - **新たな実ゲームE2E成功**：隔離ワールドで日本語設定、透明度・テーマ・ON/OFF・初期化、Shiftクリック移動、原木のクラフト、レシピブックを確認
 - **夜間・GUI Scale 3実画面確認**。ユーザーのF3画像はv0.8 通常148 FPS／UI99 FPS、v0.9 通常138 FPS／UI181 FPS（瞬間値）
 - 両環境でVSyncオフ・設定値maxFps=260を確認。ただしF3は`T: inf`表示、視点・座標も違うため**性能向上の確証ではない**
-- 未確認：同一視点の複数FPSサンプルとフレームタイム、GUI Scale 4、昼間、アイテムドラッグ、Shader fallbackと他MOD互換性
+- 最新の隔離ゲーム起動でGUI Scale 4を適用し、クラッシュなく終了。描画の一部とGLSLエラー0件を確認したが、OBSウィンドウが重なったためUI全体の目視確認は保留。
+- 未確認：同一視点の複数FPSサンプルとフレームタイム、GUI Scale 4の全UIレイアウト、アイテムドラッグ、Shader fallbackと他MOD互換性
 
 ## 安全な復元
 
