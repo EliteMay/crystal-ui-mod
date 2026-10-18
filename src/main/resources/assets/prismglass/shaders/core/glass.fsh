@@ -1,11 +1,16 @@
 #version 150
 
-// Prism Glass: screen-space crystal glass. Independent implementation of well known,
-// public techniques (rounded-box SDF, SDF-gradient normals, Schlick-style edge falloff).
+// Prism Glass v0.9: screen-space crystal glass with single-light facet optics.
+// Independent implementation of public techniques (rounded-box SDF, Cauchy-style spectral
+// dispersion sampled at 7 wavelengths, Blinn half-vector specular, Schlick-style falloff).
 //
 // Sampler0 = blurred copy of the scene, Sampler1 = sharp copy of the scene.
 // Mode 0 = pane, 1 = etched slot overlay (no backdrop sampling), 2 = button.
 // Params: x = tint veil, y = hover, z = blur mix, w = edge refraction (GUI px).
+//
+// One virtual light drives every highlight, dispersion fringe, bloom and glint. Colours are
+// never painted by screen position or time: they come from bevel slope vs. the light's half
+// vector, so the rainbow only exists where a real facet would catch the light.
 uniform sampler2D Sampler0;
 uniform sampler2D Sampler1;
 uniform vec2 FbSize;
@@ -19,6 +24,17 @@ uniform vec4 Params;
 in vec2 local;
 in vec4 vertexColor;
 out vec4 fragColor;
+
+// Spectral colours, red -> violet. Dividing by the per-channel sum makes the 7 weights add
+// up to exactly white, so a uniform backdrop stays neutral and only contrast edges split.
+const vec3 SPEC[7] = vec3[7](
+    vec3(1.00, 0.05, 0.00), vec3(1.00, 0.45, 0.00), vec3(0.90, 0.90, 0.00),
+    vec3(0.05, 0.90, 0.10), vec3(0.00, 0.80, 0.90), vec3(0.05, 0.20, 1.00),
+    vec3(0.50, 0.00, 0.90));
+const vec3 SPEC_NORM = vec3(1.0 / 3.5, 1.0 / 3.3, 1.0 / 2.9);
+
+const vec3 SILVER = vec3(0.95, 0.98, 1.00);
+const vec3 GOLD = vec3(1.00, 0.84, 0.55);
 
 float sdBox(vec2 p, vec2 b, float r) {
     vec2 q = abs(p) - (b - r);
@@ -42,6 +58,15 @@ float hash(vec2 p) {
 
 float luma(vec3 c) {
     return dot(c, vec3(0.299, 0.587, 0.114));
+}
+
+// Four-point glint: a hot core with two thin rays along the frame.
+float glint(vec2 p) {
+    float core = exp(-length(p) * 0.9);
+    float rays = exp(-abs(p.x) / 7.0) * exp(-abs(p.y) * 1.6)
+               + exp(-abs(p.y) / 7.0) * exp(-abs(p.x) * 1.6);
+    float fade = 1.0 - smoothstep(8.0, 14.0, max(abs(p.x), abs(p.y)));
+    return (core + 0.6 * rays) * fade;
 }
 
 void main() {
@@ -69,20 +94,42 @@ void main() {
     }
 
     bool button = Mode > 1.5;
+
+    // ---- the one light: upper left, slowly breathing by a few degrees ----
+    float ang = sin(Time * 0.13) * 0.06;
+    float ca = cos(ang), sa = sin(ang);
+    vec2 Lraw = vec2(-0.35, -0.75);
+    vec3 L3 = normalize(vec3(ca * Lraw.x - sa * Lraw.y, sa * Lraw.x + ca * Lraw.y, 0.55));
+    vec3 Hh = normalize(L3 + vec3(0.0, 0.0, 1.0));
+    vec2 ldir = normalize(Hh.xy);     // screen direction toward the light
+    float s0 = length(Hh.xy);         // bevel slope that mirrors the light into the eye
+
+    // ---- bevel: sin(tilt) falls from a steep fillet to the flat plate ----
     float bevel = min(button ? 3.5 : 9.0, min(HalfSize.x, HalfSize.y));
     float cover = 1.0 - smoothstep(-aa * 0.5, aa * 0.5, d);
     float depth = clamp(-d / bevel, 0.0, 1.0);
     float edge = 1.0 - depth;
     float bulge = edge * edge;
+    float slope = 0.85 * pow(edge, 1.6);
 
-    // ---- refraction: the rim bends the backdrop like a thick glass lip ----
-    vec2 duv = (-n * bulge * Params.w) * GuiScale / FbSize;
+    float lit = max(dot(n, ldir), 0.0);
+    float back = max(dot(n, -ldir), 0.0);
+
+    // ---- spectral refraction: 7 wavelengths bend by slightly different amounts ----
     vec2 uv0 = gl_FragCoord.xy / FbSize;
+    vec2 duv = (-n * bulge * Params.w) * GuiScale / FbSize;
     vec3 sharp;
-    sharp.r = texture(Sampler1, uv0 + duv * 1.10).r;
-    sharp.g = texture(Sampler1, uv0 + duv).g;
-    sharp.b = texture(Sampler1, uv0 + duv * 0.90).b;
-    vec3 soft = texture(Sampler0, uv0 + duv).rgb;
+    if (depth < 0.999) {
+        sharp = vec3(0.0);
+        for (int i = 0; i < 7; i++) {
+            float t = float(i) / 3.0 - 1.0;
+            vec3 tex = textureLod(Sampler1, uv0 + duv * (1.0 + 0.35 * t), 0.0).rgb;
+            sharp += tex * (SPEC[i] * SPEC_NORM);
+        }
+    } else {
+        sharp = textureLod(Sampler1, uv0, 0.0).rgb;
+    }
+    vec3 soft = textureLod(Sampler0, uv0 + duv, 0.0).rgb;
     vec3 col = mix(sharp, soft, mix(Params.z, Params.z * 0.35, bulge));
 
     // Legibility: keep the scene visible but calm its contrast and brightness spikes.
@@ -94,75 +141,83 @@ void main() {
     float ty = clamp(local.y / max(HalfSize.y, 1.0) * 0.5 + 0.5, 0.0, 1.0);
     col += tint * (0.07 * (1.0 - ty)) - vec3(0.02, 0.03, 0.04) * ty;
 
-    // ---- edge light ----
-    vec2 L = normalize(vec2(-0.55, -0.83));
-    float ndl = dot(n, L);
-    float primary = max(ndl, 0.0);
-    float secondary = max(-ndl, 0.0);
-    float line = 1.0 - smoothstep(0.0, button ? 1.1 : 1.4, -d);
-    vec3 warm = vec3(1.0, 0.86, 0.58);
-    vec3 cool = vec3(0.93, 0.98, 1.0);
-    vec3 rim = mix(cool, warm, clamp(secondary * 1.4, 0.0, 1.0));
-    float rimAmt = line * (0.22 + 0.85 * primary + 0.5 * secondary);
+    // ---- silver rim on the lit side, gold on the far side (light that crossed the plate) ----
+    float line = 1.0 - smoothstep(0.0, button ? 1.0 : 1.3, -d);
+    vec3 rim = mix(SILVER, GOLD, smoothstep(0.2, 0.9, back));
+    float rimAmt = line * (0.18 + 0.55 * pow(lit, 1.5) + 0.35 * back);
     col = mix(col, rim, clamp(rimAmt, 0.0, 1.0));
-    // Wider Fresnel falloff under the rim.
-    col += rim * pow(edge, 3.0) * (0.10 + 0.22 * primary + 0.12 * secondary);
+    col += rim * pow(edge, 3.0) * (0.06 + 0.12 * lit + 0.10 * back);
 
-    // ---- delicate pearl iridescence, only along the beveled glass edge ----
-    // Time shifts the hue very slowly, not the geometry. The central world
-    // view and item slots stay clear; no full-panel rainbow or flashing overlay.
-    float edgeZone = 1.0 - smoothstep(0.7, button ? 2.4 : 6.0, -d);
-    float topEdge = 1.0 - smoothstep(-0.78, -0.18, n.y);
-    float sideEdge = abs(n.x);
-    float cornerGlow = smoothstep(0.68, 0.97, abs(local.x) / max(HalfSize.x, 1.0));
-    float spectralPhase = 1.7 * local.x / max(HalfSize.x, 1.0)
-                        + 0.35 * local.y / max(HalfSize.y, 1.0)
-                        + Time * 0.11;
-    vec3 spectrum = 0.53 + 0.47 * cos(spectralPhase + vec3(0.0, -2.0944, 2.0944));
-    vec3 pearlSpectrum = mix(vec3(0.97, 0.99, 1.0), spectrum, 0.63);
-    float spectrumMask = edgeZone * (0.54 * topEdge + 0.12 * sideEdge
-                                   + 0.22 * cornerGlow);
-    float spectrumWeight = min(0.46, spectrumMask) * (button ? 0.32 : 1.0);
-    col = mix(col, pearlSpectrum, spectrumWeight);
+    // ---- prism fringe: spectral specular where the facet mirrors the light ----
+    // u measures how far this bevel slope is from the mirror slope. Each wavelength peaks at
+    // a slightly different u, so red..violet appear as an ordered stripe, only on lit facets.
+    // The bevel is not machined perfectly: a low-frequency ripple of the slope makes the stripe
+    // drift in depth, and the lit corner is where the light is brightest, so the fringe fades
+    // with distance from it instead of running as a uniform ribbon.
+    vec2 litCorner = vec2(-(HalfSize.x - Radius), -(HalfSize.y - Radius)) + Radius * ldir;
+    float wob = 0.035 * (sin(local.x * 0.09) + 0.6 * sin(local.x * 0.23 + 2.0))
+              + 0.035 * (sin(local.y * 0.11 + 1.0) + 0.6 * sin(local.y * 0.27));
+    float env = 0.25 + 0.75 * exp(-length(local - litCorner) / (0.9 * length(HalfSize)) * 2.6);
+    float u = (slope + wob - s0) / 0.16;
+    vec3 fringe = vec3(0.0);
+    vec3 fringeBack = vec3(0.0);
+    for (int i = 0; i < 7; i++) {
+        float t = float(i) / 3.0 - 1.0;
+        float a1 = u - 1.3 * t;
+        float a2 = u + 1.3 * t;           // light leaving the far side: reversed order
+        vec3 w = SPEC[i] * SPEC_NORM;
+        fringe += w * exp(-a1 * a1 * 3.0);
+        fringeBack += w * exp(-a2 * a2 * 3.0);
+    }
+    float alignLit = pow(lit, 6.0) * env;
+    float alignBack = pow(back, 6.0) * (0.25 + 0.75 * exp(-length(local + litCorner) / (0.9 * length(HalfSize)) * 2.6));
+    float core = exp(-u * u * 1.2);
+    float kF = button ? 0.45 : 0.85;
+    vec3 prism = fringe * alignLit * kF
+               + fringeBack * alignBack * 0.32 * kF * mix(vec3(1.0), GOLD, 0.35)
+               + SILVER * core * alignLit * 0.10 * kF;
+    // Dispersed light is re-routed energy: dim the base under the fringe so hue survives
+    // even over a white snow backdrop instead of clipping to white.
+    float fm = clamp(luma(fringe * alignLit + fringeBack * alignBack * 0.32) * 1.1, 0.0, 0.6);
+    col = col * (1.0 - fm * 0.55) + prism;
 
     // Thin dark contour just inside the rim gives the plate thickness.
     float contour = smoothstep(1.3, 2.2, -d) * (1.0 - smoothstep(2.2, 3.8, -d));
     col *= 1.0 - contour * (button ? 0.05 : 0.08);
 
+    // ---- sacred light inside: faint gold scattering gathered toward the lit edge ----
+    float scatterEdge = exp(min(d, 0.0) / 9.0);
+    float litSoft = smoothstep(0.1, 0.9, dot(n, ldir));
+    col += GOLD * scatterEdge * litSoft * (button ? 0.03 : 0.06);
     if (!button) {
-        // Slow diagonal sheen bands.
-        float t = dot(local, normalize(vec2(1.0, 0.75))) / max(length(HalfSize), 1.0);
-        t += sin(Time * 0.25) * 0.025;
-        float sheen = exp(-pow((t + 0.42) * 5.0, 2.0)) * 0.085
-                    + exp(-pow((t - 0.08) * 13.0, 2.0)) * 0.045;
-        col += mix(cool, pearlSpectrum, 0.38) * sheen * smoothstep(1.0, 8.0, -d);
+        float lg = dot(local / HalfSize, ldir);
+        col += GOLD * smoothstep(-0.2, 1.2, lg) * 0.03;
+    }
 
-        // Soft halo of light gathering at the top edge.
-        vec2 hp = (local - vec2(0.0, -HalfSize.y)) / vec2(HalfSize.x * 0.85, HalfSize.y * 0.55);
-        col += mix(cool, warm, 0.45) * exp(-length(hp) * 1.7) * 0.13;
-
-        // Sparse twinkles hugging the frame only, never over the item area.
-        vec2 cell = floor((local + HalfSize) / 10.0);
-        float h = hash(cell);
-        if (h > 0.985) {
-            vec2 p = fract((local + HalfSize) / 10.0) - 0.5;
-            float tw = pow(max(0.0, sin(Time * 1.6 + h * 80.0)), 6.0);
-            float star = exp(-length(p) * 13.0) + 0.5 * exp(-abs(p.x) * 30.0 - abs(p.y) * 5.0)
-                                                + 0.5 * exp(-abs(p.y) * 30.0 - abs(p.x) * 5.0);
-            float zone = 1.0 - smoothstep(3.0, 14.0, -d);
-            col += mix(warm, pearlSpectrum, 0.42) * star * tw * zone * 0.38 * step(0.0, -d);
-        }
+    // ---- glints: where the light is mirrored at the corners (lit corner strong) ----
+    float gl = 0.0;
+    if (!button) {
+        float breath = 0.78 + 0.22 * sin(Time * 0.5);
+        vec2 corner = litCorner;
+        vec2 corner2 = vec2(HalfSize.x - Radius, HalfSize.y - Radius) - Radius * ldir;
+        gl = (glint(local - corner) * breath + 0.35 * glint(local - corner2)) * 0.55;
+        col += mix(SILVER, GOLD, 0.25) * gl * step(0.0, -d);
     } else {
         col += tint * Params.y * 0.14;
         float under = (1.0 - smoothstep(0.0, 1.2, abs(local.y - (HalfSize.y - 3.0)))) * Params.y;
-        col = mix(col, warm, under * 0.7 * smoothstep(0.0, HalfSize.x * 0.5, HalfSize.x - abs(local.x)));
+        col = mix(col, GOLD, under * 0.7 * smoothstep(0.0, HalfSize.x * 0.5, HalfSize.x - abs(local.x)));
     }
 
     // Fine grain removes banding and gives the plate a micro surface.
     col += (hash(gl_FragCoord.xy) - 0.5) * 0.016;
 
-    // ---- floating shadow (pane/button), outside the plate ----
-    float sh = 0.0;
+    // ---- outside the plate: light bloom on the lit side, shadow on the far side ----
+    float litOut = smoothstep(0.05, 0.95, dot(n, ldir));
+    float bloomFade = button ? (1.0 - smoothstep(1.5, 6.0, d)) : (1.0 - smoothstep(6.0, 14.0, d));
+    float bloom = exp(-max(d, 0.0) / 4.5) * litOut * bloomFade * (button ? 0.14 : 0.30);
+    bloom += gl * 0.8 * step(0.0, d);
+    bloom = clamp(bloom, 0.0, 0.85);
+    float sh;
     if (!button) {
         float sd = sdBox(local - vec2(0.0, 3.0), HalfSize, Radius);
         sh = (1.0 - smoothstep(-2.0, 9.0, sd)) * 0.30;
@@ -170,10 +225,15 @@ void main() {
         float sd = sdBox(local - vec2(0.0, 1.5), HalfSize, Radius);
         sh = (1.0 - smoothstep(-1.0, 4.0, sd)) * 0.22;
     }
-    sh *= 1.0 - cover;
+    sh *= (1.0 - litOut * 0.8) * (1.0 - bloom);
     vec3 shadowCol = vec3(0.03, 0.07, 0.12);
-    float a = cover + sh * (1.0 - cover);
+    vec3 bloomCol = mix(SILVER, GOLD, 0.35);
+    float ao = 1.0 - (1.0 - sh) * (1.0 - bloom);
+    vec3 outRgb = (shadowCol * sh * (1.0 - bloom) + bloomCol * bloom) / max(ao, 1e-4);
+    float aoS = ao * (1.0 - cover);
+
+    float a = cover + aoS;
     if (a < 0.003) discard;
-    vec3 rgb = (clamp(col, 0.0, 1.0) * cover + shadowCol * sh) / a;
+    vec3 rgb = (clamp(col, 0.0, 1.0) * cover + outRgb * aoS) / a;
     fragColor = vec4(rgb, a);
 }
