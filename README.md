@@ -32,8 +32,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\iterate.ps1 -Tag manual
 - `run/saves/New World`：**テスト前後で存在とフォルダ更新日時を維持**
 - `build/libs/prismglass-0.9.0.jar` とATLauncher `modtest/mods/prismglass-0.9.0.jar`：SHA-256一致
 - 既存の開発ログ：検索対象のGPU glass disabled / shader compile / linkのエラーなし
-- Claudeの前セッションが残した雪原・砂漠等のゲーム内スクリーンショットを確認済み。ただし**今回のセッションで新たに操作を完走したわけではない**
-- 未確認：GUI Scale別、夜間、FPS影響、アイテムドラッグ・Shiftクリック・クラフト・レシピブックのE2E
+- **新たな実ゲームE2E成功**：隔離ワールドで日本語設定、透明度・テーマ・ON/OFF・初期化、Shiftクリック移動、原木のクラフト、レシピブックを確認
+- **夜間・GUI Scale 3実画面確認**。ユーザーのF3画像はv0.8 通常148 FPS／UI99 FPS、v0.9 通常138 FPS／UI181 FPS（瞬間値）
+- 両環境でVSyncオフ・設定値maxFps=260を確認。ただしF3は`T: inf`表示、視点・座標も違うため**性能向上の確証ではない**
+- 未確認：同一視点の複数FPSサンプルとフレームタイム、GUI Scale 4、昼間、アイテムドラッグ、Shader fallbackと他MOD互換性
 
 ## 安全な復元
 
