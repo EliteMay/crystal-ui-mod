@@ -21,9 +21,17 @@ Windows（Java 21が導入済みの開発用PC）で以下を実行します。
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\iterate-safety.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\iterate.ps1 -Tag manual
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\forge-runtime-linkage.ps1
 ```
 
 `iterate.ps1` はワールドを削除しません。Minecraftプロセスを強制終了せず、キー入力やスクリーンショット自動撮影もしません。通常実行はGradle `build` のみで、明示的な `-RunClient` 指定時だけForge開発クライアントを起動します。既存の開発クライアントを見つけたら重複起動を拒否します。起動後にゲーム操作をする場合はテストワールドに限定し、既存セーブへの変更に注意してください。
+
+## 2026-10-25 Forge配布互換性のクラッシュ修正
+
+- ATLauncher `modtest` で `NoSuchMethodError: ResourceLocation.m_339182_` が発生。`GlassShaders`のシェーダー登録時にクラッシュした。
+- 原因は、Forge 52.1.0の実行用JARが `ResourceLocation.fromNamespaceAndPath` を提供しているのに、直前に設定した `reobf = true` が存在しない `m_339182_` 呼び出しを生成したこと。
+- **`reobf = false` に戻し、クリーンビルドとATLauncher実行用JARに対するメソッド名照合を成功させた。**
+- MOD2件は修正版に差し替えたが、修正後のMinecraft再起動と実ゲーム併用動作はユーザー確認待ち。誤った判断と検証過程は [配布互換性検証_20261025.md](配布互換性検証_20261025.md) に記録。
 
 ## 検証状況（2026-10-18）
 

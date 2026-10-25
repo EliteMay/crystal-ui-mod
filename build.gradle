@@ -9,8 +9,9 @@ base { archivesName = mod_id }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 minecraft {
     mappings channel: 'official', version: minecraft_version
-    // Produce Forge remapped jars for launcher/mods; dev runClient still uses source sets.
-    reobf = true
+    // Forge 1.21.1-52.1.0 ATLauncher runtime exposes Mojang names.
+    // Reobfuscating to m_*/f_* causes NoSuchMethodError at launch.
+    reobf = false
     copyIdeResources = true
     runs {
         configureEach {
