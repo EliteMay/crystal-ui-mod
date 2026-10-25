@@ -9,7 +9,7 @@ Minecraft Java Edition **1.21.1 / Forge 52.1.0 / Java 21** 用のクライアン
 - テーマ/透過率/ON・OFFを既存設定から継承。チャット・死亡画面・読み込み・HUD・他MOD独自画面は当面変更しない。
 - **完全な「全画面ガラス化」ではなく第1段階。** 複雑な作業画面の背景とHUDは今後の対象。画面別の対応状況と実機テスト項目は[UI_COVERAGE.md](UI_COVERAGE.md)を参照。
 - Java21 / Forge52.1.0でクリーンビルド、画面クラス置換の範囲、実ランタイムメソッド照合、安全なビルドスクリプトは自動検査済み。v0.10.0の実ゲーム視覚確認はまだ。
-- 稼働中のMinecraftへMODを上書きしない。ATLauncher`modtest`を終了後に`install-global-ui-modtest.ps1`で導入/復元し、`sabaibaru`には触れない。
+- 2026-10-25 22時台、ATLauncher `modtest` が終了していることを確認してv0.10.0を導入済み。JAR/バックアップを独立照合。問題があればゲーム終了後に`install-global-ui-modtest.ps1 -Restore`で旧版へ戻せる。`sabaibaru`には触れていない。**v0.10の実機起動・操作はまだ未確認。**
 
 ## v0.9：自然なプリズム光学
 
