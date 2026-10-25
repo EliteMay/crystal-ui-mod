@@ -7,7 +7,7 @@ Minecraft Java Edition **1.21.1 / Forge 52.1.0 / Java 21** 用のクライアン
 - v0.10.0で実機描画成功したチェスト・作業台の構造と透明感を維持。
 - `FurnaceScreen`、`BlastFurnaceScreen`、`SmokerScreen`の3画面に、共通ガラス背景、メニュー本体の値に連動する炎と調理進捗を追加。
 - 各画面はMinecraft標準クラスの継承を維持し、レシピブック・アイテム移動・調理ロジックを置き換えない。
-- 対象画面のJavaビルドと静的保護テスト・Forgeランタイムとのマッピング一致は合格。ただしv0.11.0の**実機描画と調理操作は未確認**。
+- Javaビルドと静的保護テスト・Forgeランタイムのマッピング一致は合格。**かまどは実機スクリーンショット2枚でガラス描画・木炭生成まで確認済み。** 溶鉱炉と燻製器、完成品のクリック回収・各画面のGUI Scale差は未確認。
 - ATLauncher `modtest`にはv0.11.0を導入済み。旧v0.10.0のJARはSHA-256照合済みでバックアップを保持。復元はゲーム終了後に`install-furnace-ui-modtest.ps1 -Restore`。
 - 現在の画面対応と残り（特殊画面・HUD）は [UI_COVERAGE.md](UI_COVERAGE.md) を参照。
 
