@@ -37,6 +37,7 @@ public final class CrystalGlobalDecor {
             int w = container.getXSize();
             int h = container.getYSize();
             GlassPaint.rim(graphics, x - 8, y - 10, w + 16, h + 19);
+            GlassComplexScreenDecor.render(container, graphics, preferences);
             return;
         }
 

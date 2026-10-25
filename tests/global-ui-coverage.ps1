@@ -65,7 +65,27 @@ if ($merchant -notmatch 'super\.renderLabels\(' -or
     $merchant -match '(?m)\b(?:void|boolean)\s+(?:mouseScrolled|mouseClicked|mouseDragged)\s*\(') {
     throw 'Merchant selection/scroll protection missing'
 }
+$complex = Get-Content -LiteralPath (Join-Path $src 'GlassComplexScreenDecor.java') -Raw
+foreach ($type in @('EnchantmentScreen', 'SmithingScreen', 'StonecutterScreen')) {
+    if ($complex -notmatch ('screen\.getClass\(\) == ' + $type + '\.class') -and
+        $complex -notmatch ('exactScreenClass == ' + $type + '\.class')) {
+        throw "Special GUI missing exact vanilla screen check: $type"
+    }
+    if ($events -match ('screen\.getClass\(\) == ' + $type + '\.class')) {
+        throw "Complex vanilla UI should not be replaced by onOpen: $type"
+    }
+}
+if ($complex -match '(?m)\b(?:void|boolean)\s+(?:mouseClicked|slotClicked|mouseReleased|mouseDragged|mouseScrolled|keyPressed)\s*\(') {
+    throw 'Complex visual-only decoration unexpectedly implements input handling'
+}
+if ($complex -notmatch 'menu\.costs' -or $complex -notmatch 'getSelectedRecipeIndex\(\)' -or
+    $complex -notmatch 'getNumRecipes\(\)' -or $complex -notmatch 'getMenu\(\)\.slots') {
+    throw 'Complex decorations are not grounded in vanilla menu state'
+}
 $decor = Get-Content -LiteralPath (Join-Path $src 'CrystalGlobalDecor.java') -Raw
+if ($decor -notmatch 'GlassComplexScreenDecor\.render\(container, graphics, preferences\)') {
+    throw 'Complex decoration not connected to global vanilla rendering'
+}
 if ($decor -notmatch 'className\.startsWith\("net\.minecraft\.client\.gui\.screens\."') {
     throw 'Global decoration not limited to Minecraft vanilla screen namespace'
 }
