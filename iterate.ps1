@@ -30,6 +30,19 @@ try {
         throw "Gradle build failed: exit code $LASTEXITCODE"
     }
 
+    $coverageCheck = Join-Path $root 'tests\global-ui-coverage.ps1'
+    if (Test-Path -LiteralPath $coverageCheck) {
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $coverageCheck
+        if ($LASTEXITCODE -ne 0) { throw 'Global GUI coverage regression failed' }
+    }
+    $forgeClient = Join-Path $env:APPDATA 'ATLauncher\libraries\net\minecraftforge\forge\1.21.1-52.1.0\forge-1.21.1-52.1.0-client.jar'
+    if (Test-Path -LiteralPath $forgeClient) {
+        & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'tests\forge-runtime-linkage.ps1')
+        if ($LASTEXITCODE -ne 0) { throw 'Forge runtime method linkage regression failed' }
+    } else {
+        Write-Warning 'ATLauncher runtime not found; release mapping verification NOT RUN.'
+    }
+
     if ($RunClient) {
         # Never terminate running Java/Minecraft processes. User must close clients manually.
         $running = @(Get-CimInstance Win32_Process -Filter "Name='java.exe' OR Name='javaw.exe'" |

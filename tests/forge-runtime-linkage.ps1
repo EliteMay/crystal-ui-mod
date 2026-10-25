@@ -2,7 +2,9 @@
 # Read-only validation; does not start Minecraft or touch saves.
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
-$jar = Join-Path $root 'build\libs\prismglass-0.9.0.jar'
+$versionLine = (Select-String -LiteralPath (Join-Path $root 'gradle.properties') -Pattern '^mod_version=').Line
+$version = ($versionLine -split '=', 2)[1].Trim()
+$jar = Join-Path $root "build\libs\prismglass-$version.jar"
 $runtime = Join-Path $env:APPDATA 'ATLauncher\libraries\net\minecraftforge\forge\1.21.1-52.1.0\forge-1.21.1-52.1.0-client.jar'
 $jdk = 'D:\AI\tools\runtimes\prismglass-jdk21\jdk-21.0.12.1+1\bin\javap.exe'
 foreach ($path in @($jar, $runtime, $jdk)) {
