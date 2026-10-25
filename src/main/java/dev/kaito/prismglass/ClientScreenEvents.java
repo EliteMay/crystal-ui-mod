@@ -12,11 +12,17 @@ import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.client.gui.screens.inventory.HopperScreen;
 import net.minecraft.client.gui.screens.inventory.DispenserScreen;
 import net.minecraft.client.gui.screens.inventory.ShulkerBoxScreen;
+import net.minecraft.client.gui.screens.inventory.FurnaceScreen;
+import net.minecraft.client.gui.screens.inventory.BlastFurnaceScreen;
+import net.minecraft.client.gui.screens.inventory.SmokerScreen;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.inventory.HopperMenu;
 import net.minecraft.world.inventory.DispenserMenu;
 import net.minecraft.world.inventory.ShulkerBoxMenu;
+import net.minecraft.world.inventory.FurnaceMenu;
+import net.minecraft.world.inventory.BlastFurnaceMenu;
+import net.minecraft.world.inventory.SmokerMenu;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -62,6 +68,18 @@ public final class ClientScreenEvents {
         } else if (screen.getClass() == ShulkerBoxScreen.class) {
             event.setNewScreen(new FrostedShulkerBoxScreen(
                 (ShulkerBoxMenu) ((ShulkerBoxScreen) screen).getMenu(), inventory,
+                screen.getTitle(), prefs()));
+        } else if (screen.getClass() == FurnaceScreen.class) {
+            event.setNewScreen(new FrostedFurnaceScreen(
+                (FurnaceMenu) ((FurnaceScreen) screen).getMenu(), inventory,
+                screen.getTitle(), prefs()));
+        } else if (screen.getClass() == BlastFurnaceScreen.class) {
+            event.setNewScreen(new FrostedBlastFurnaceScreen(
+                (BlastFurnaceMenu) ((BlastFurnaceScreen) screen).getMenu(), inventory,
+                screen.getTitle(), prefs()));
+        } else if (screen.getClass() == SmokerScreen.class) {
+            event.setNewScreen(new FrostedSmokerScreen(
+                (SmokerMenu) ((SmokerScreen) screen).getMenu(), inventory,
                 screen.getTitle(), prefs()));
         }
     }

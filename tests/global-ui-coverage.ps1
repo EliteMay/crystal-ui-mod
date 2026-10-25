@@ -9,7 +9,10 @@ $classes = @(
     @('CraftingScreen','FrostedCraftingScreen'),
     @('HopperScreen','FrostedHopperScreen'),
     @('DispenserScreen','FrostedDispenserScreen'),
-    @('ShulkerBoxScreen','FrostedShulkerBoxScreen')
+    @('ShulkerBoxScreen','FrostedShulkerBoxScreen'),
+    @('FurnaceScreen','FrostedFurnaceScreen'),
+    @('BlastFurnaceScreen','FrostedBlastFurnaceScreen'),
+    @('SmokerScreen','FrostedSmokerScreen')
 )
 foreach ($pair in $classes) {
     $original = $pair[0]
@@ -21,17 +24,27 @@ foreach ($pair in $classes) {
         throw "Missing replacement construction: $replacement"
     }
     $source = Get-Content -LiteralPath (Join-Path $src ($replacement+'.java')) -Raw
-    if ($source -notmatch 'extends (InventoryScreen|ContainerScreen|CraftingScreen|HopperScreen|DispenserScreen|ShulkerBoxScreen)') {
+    if ($source -notmatch 'extends (InventoryScreen|ContainerScreen|CraftingScreen|HopperScreen|DispenserScreen|ShulkerBoxScreen|FurnaceScreen|BlastFurnaceScreen|SmokerScreen)') {
         throw "Replacement does not inherit vanilla screen: $replacement"
     }
-    if ($source -notmatch 'super\.renderBg\(' -or $source -notmatch 'GlassContainerSkin\.draw\(' -and $replacement -ne 'FrostedInventoryScreen') {
-        if ($replacement -ne 'FrostedInventoryScreen') {
-            throw "Vanilla-disabled fallback or glass background missing: $replacement"
-        }
+    $usesSkin = $source -match 'GlassContainerSkin\.draw\(' -or
+                $source -match 'GlassFurnaceSkin\.draw\('
+    if ($replacement -ne 'FrostedInventoryScreen' -and
+        ($source -notmatch 'super\.renderBg\(' -or -not $usesSkin)) {
+        throw "Vanilla-disabled fallback or glass background missing: $replacement"
     }
     if ($source -match '(?m)\b(?:void|boolean)\s+(?:mouseClicked|slotClicked|mouseReleased|mouseDragged|handleSlotClick|keyPressed)\s*\(') {
         throw "Replacement overrides interactive input unexpectedly: $replacement"
     }
+}
+$furnace = Get-Content -LiteralPath (Join-Path $src 'GlassFurnaceSkin.java') -Raw
+if ($furnace -notmatch 'getBurnProgress\(\)' -or
+    $furnace -notmatch 'getLitProgress\(\)' -or
+    $furnace -notmatch 'isLit\(\)') {
+    throw 'Furnace flame or cooking progress no longer follows the vanilla menu'
+}
+if ($furnace -notmatch 'Math\.min\(24,' -or $furnace -notmatch 'Math\.min\(14,') {
+    throw 'Furnace visual progress clamping missing'
 }
 $decor = Get-Content -LiteralPath (Join-Path $src 'CrystalGlobalDecor.java') -Raw
 if ($decor -notmatch 'className\.startsWith\("net\.minecraft\.client\.gui\.screens\."') {
