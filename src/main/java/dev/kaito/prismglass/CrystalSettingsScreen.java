@@ -30,7 +30,14 @@ public final class CrystalSettingsScreen extends Screen {
         boolean tiny = ph < 174;
         int buttonHeight = tiny ? 18 : 25;
         int rowStep = tiny ? 20 : 29;
-        int sy = py + (tiny ? 25 : 61);
+        int sy = py + (tiny ? 35 : 61);
+
+        // Windows resized below this height cannot fit four control rows.
+        if (ph < 115) {
+            addRenderableWidget(new CrystalButton(bx, py + Math.max(24, ph - 22), bw, 18,
+                Component.literal("画面を広げてください（戻る）"), preferences, button -> onClose()));
+            return;
+        }
 
         addRenderableWidget(new CrystalButton(bx, sy, bw, buttonHeight, enabledLabel(), preferences, button -> {
             preferences.toggle();
@@ -80,6 +87,12 @@ public final class CrystalSettingsScreen extends Screen {
         super.render(g, mouseX, mouseY, tick);
         GlassTypography.centered(g, font, title, width / 2,
             py + (ph < 174 ? 15 : 17), true);
+        if (ph >= 115 && ph < 174) {
+            // Compact screens still need visible feedback for +/- 10% buttons.
+            GlassTypography.centered(g, font,
+                Component.literal(PrismJapaneseText.opacity(preferences.opacity())),
+                width / 2, py + 26, true);
+        }
         if (ph >= 174) {
             GlassTypography.centered(g, font, Component.literal(PrismJapaneseText.subtitle()),
                 width / 2, py + 30, true);
