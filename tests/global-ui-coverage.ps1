@@ -12,7 +12,10 @@ $classes = @(
     @('ShulkerBoxScreen','FrostedShulkerBoxScreen'),
     @('FurnaceScreen','FrostedFurnaceScreen'),
     @('BlastFurnaceScreen','FrostedBlastFurnaceScreen'),
-    @('SmokerScreen','FrostedSmokerScreen')
+    @('SmokerScreen','FrostedSmokerScreen'),
+    @('BrewingStandScreen','FrostedBrewingStandScreen'),
+    @('AnvilScreen','FrostedAnvilScreen'),
+    @('MerchantScreen','FrostedMerchantScreen')
 )
 foreach ($pair in $classes) {
     $original = $pair[0]
@@ -24,11 +27,12 @@ foreach ($pair in $classes) {
         throw "Missing replacement construction: $replacement"
     }
     $source = Get-Content -LiteralPath (Join-Path $src ($replacement+'.java')) -Raw
-    if ($source -notmatch 'extends (InventoryScreen|ContainerScreen|CraftingScreen|HopperScreen|DispenserScreen|ShulkerBoxScreen|FurnaceScreen|BlastFurnaceScreen|SmokerScreen)') {
+    if ($source -notmatch 'extends (InventoryScreen|ContainerScreen|CraftingScreen|HopperScreen|DispenserScreen|ShulkerBoxScreen|FurnaceScreen|BlastFurnaceScreen|SmokerScreen|BrewingStandScreen|AnvilScreen|MerchantScreen)') {
         throw "Replacement does not inherit vanilla screen: $replacement"
     }
     $usesSkin = $source -match 'GlassContainerSkin\.draw\(' -or
-                $source -match 'GlassFurnaceSkin\.draw\('
+                $source -match 'GlassFurnaceSkin\.draw\(' -or
+                $source -match 'GlassBrewingSkin\.draw\('
     if ($replacement -ne 'FrostedInventoryScreen' -and
         ($source -notmatch 'super\.renderBg\(' -or -not $usesSkin)) {
         throw "Vanilla-disabled fallback or glass background missing: $replacement"
@@ -45,6 +49,21 @@ if ($furnace -notmatch 'getBurnProgress\(\)' -or
 }
 if ($furnace -notmatch 'Math\.min\(24,' -or $furnace -notmatch 'Math\.min\(14,') {
     throw 'Furnace visual progress clamping missing'
+}
+$brewing = Get-Content -LiteralPath (Join-Path $src 'GlassBrewingSkin.java') -Raw
+if ($brewing -notmatch 'getFuel\(\)' -or $brewing -notmatch 'getBrewingTicks\(\)' -or
+    $brewing -notmatch 'Math\.min\(400,' -or $brewing -notmatch 'Math\.min\(28,') {
+    throw 'Brewing progress is not computed safely from the vanilla menu'
+}
+$anvil = Get-Content -LiteralPath (Join-Path $src 'FrostedAnvilScreen.java') -Raw
+if ($anvil -notmatch 'super\.renderLabels\(' -or
+    $anvil -notmatch 'renderErrorIcon\(') {
+    throw 'Anvil cost/error display preservation missing'
+}
+$merchant = Get-Content -LiteralPath (Join-Path $src 'FrostedMerchantScreen.java') -Raw
+if ($merchant -notmatch 'super\.renderLabels\(' -or
+    $merchant -match '(?m)\b(?:void|boolean)\s+(?:mouseScrolled|mouseClicked|mouseDragged)\s*\(') {
+    throw 'Merchant selection/scroll protection missing'
 }
 $decor = Get-Content -LiteralPath (Join-Path $src 'CrystalGlobalDecor.java') -Raw
 if ($decor -notmatch 'className\.startsWith\("net\.minecraft\.client\.gui\.screens\."') {

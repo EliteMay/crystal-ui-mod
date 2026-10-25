@@ -15,6 +15,9 @@ import net.minecraft.client.gui.screens.inventory.ShulkerBoxScreen;
 import net.minecraft.client.gui.screens.inventory.FurnaceScreen;
 import net.minecraft.client.gui.screens.inventory.BlastFurnaceScreen;
 import net.minecraft.client.gui.screens.inventory.SmokerScreen;
+import net.minecraft.client.gui.screens.inventory.BrewingStandScreen;
+import net.minecraft.client.gui.screens.inventory.AnvilScreen;
+import net.minecraft.client.gui.screens.inventory.MerchantScreen;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.inventory.HopperMenu;
@@ -23,6 +26,9 @@ import net.minecraft.world.inventory.ShulkerBoxMenu;
 import net.minecraft.world.inventory.FurnaceMenu;
 import net.minecraft.world.inventory.BlastFurnaceMenu;
 import net.minecraft.world.inventory.SmokerMenu;
+import net.minecraft.world.inventory.BrewingStandMenu;
+import net.minecraft.world.inventory.AnvilMenu;
+import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -80,6 +86,18 @@ public final class ClientScreenEvents {
         } else if (screen.getClass() == SmokerScreen.class) {
             event.setNewScreen(new FrostedSmokerScreen(
                 (SmokerMenu) ((SmokerScreen) screen).getMenu(), inventory,
+                screen.getTitle(), prefs()));
+        } else if (screen.getClass() == BrewingStandScreen.class) {
+            event.setNewScreen(new FrostedBrewingStandScreen(
+                (BrewingStandMenu) ((BrewingStandScreen) screen).getMenu(), inventory,
+                screen.getTitle(), prefs()));
+        } else if (screen.getClass() == AnvilScreen.class) {
+            event.setNewScreen(new FrostedAnvilScreen(
+                (AnvilMenu) ((AnvilScreen) screen).getMenu(), inventory,
+                screen.getTitle(), prefs()));
+        } else if (screen.getClass() == MerchantScreen.class) {
+            event.setNewScreen(new FrostedMerchantScreen(
+                (MerchantMenu) ((MerchantScreen) screen).getMenu(), inventory,
                 screen.getTitle(), prefs()));
         }
     }
