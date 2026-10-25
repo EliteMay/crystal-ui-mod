@@ -9,7 +9,8 @@ base { archivesName = mod_id }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 minecraft {
     mappings channel: 'official', version: minecraft_version
-    reobf = false
+    // Produce Forge remapped jars for launcher/mods; dev runClient still uses source sets.
+    reobf = true
     copyIdeResources = true
     runs {
         configureEach {
