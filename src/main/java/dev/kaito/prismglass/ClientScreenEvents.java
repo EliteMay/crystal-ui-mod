@@ -106,6 +106,9 @@ public final class ClientScreenEvents {
     @SubscribeEvent
     public void onRenderPre(ScreenEvent.Render.Pre event) {
         GlassBackdrop.beginFrame();
+        if (event.getScreen() instanceof AbstractContainerScreen<?> container) {
+            GlassComplexScreenDecor.drawBackdrop(container, event.getGuiGraphics(), prefs());
+        }
     }
 
     /** Global chrome covers vanilla menus and specialized containers without replacing logic. */

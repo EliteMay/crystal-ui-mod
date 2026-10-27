@@ -82,6 +82,18 @@ if ($complex -notmatch 'menu\.costs' -or $complex -notmatch 'getSelectedRecipeIn
     $complex -notmatch 'getNumRecipes\(\)' -or $complex -notmatch 'getMenu\(\)\.slots') {
     throw 'Complex decorations are not grounded in vanilla menu state'
 }
+if ($complex -notmatch 'exactScreenClass == GrindstoneScreen\.class' -or
+    $complex -notmatch '0xFF14293C' -or
+    $complex -match '0x9B102437' -or
+    $complex -notmatch 'GlassPaint\.rim\(g, x \+ slot\.x, y \+ slot\.y, 18, 18\)') {
+    throw 'Screenshot regression: grinder scope, single opaque title mask, or slot borders missing'
+}
+if ($complex -notmatch 'static void drawBackdrop\(') {
+    throw 'Optional transparent resource-pack preview cannot render a glass pane'
+}
+if ($events -notmatch 'GlassComplexScreenDecor\.drawBackdrop\(container, event\.getGuiGraphics\(\), prefs\(\)\)') {
+    throw 'Glass backdrop not placed before native container rendering'
+}
 $decor = Get-Content -LiteralPath (Join-Path $src 'CrystalGlobalDecor.java') -Raw
 if ($decor -notmatch 'GlassComplexScreenDecor\.render\(container, graphics, preferences\)') {
     throw 'Complex decoration not connected to global vanilla rendering'
